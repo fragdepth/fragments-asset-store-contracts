@@ -1,6 +1,8 @@
-# Hasten Smart Contracts v1
+# Fragments Asset Store Contracts
 
-Solidity and Flow contracts to support **hasten.app** NFTs and FTs.
+Solidity (and Flow (outdated)) contracts to support the Fragments Asset Store.
+
+This is a licensed fork derived from https://github.com/fragcolor-xyz/hasten-contracts
 
 ## Deterministic contracts (EVM chains)
 

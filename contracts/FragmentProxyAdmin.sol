@@ -12,7 +12,7 @@ import "openzeppelin-solidity/contracts/proxy/transparent/TransparentUpgradeable
  */
 contract FragmentProxyAdmin is Ownable {
     constructor()
-        Ownable(address(0x7F7eF2F9D8B0106cE76F66940EF7fc0a3b23C974))
+        Ownable(address(0x0C4DeC4c53a9c6EbF7877EE0fFEc663645566345))
     {}
 
     /**

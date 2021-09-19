@@ -103,7 +103,7 @@ contract Fragment is
 
     constructor()
         ERC721(_NAME, _SYMBOL)
-        Ownable(address(0x7F7eF2F9D8B0106cE76F66940EF7fc0a3b23C974))
+        Ownable(address(0x0C4DeC4c53a9c6EbF7877EE0fFEc663645566345))
     {
         // NOT INVOKED IF PROXIED
         _setStakeLock(23500);
@@ -120,7 +120,7 @@ contract Fragment is
 
     function bootstrap() public payable initializer {
         // Ownable
-        Ownable._bootstrap(address(0x7F7eF2F9D8B0106cE76F66940EF7fc0a3b23C974));
+        Ownable._bootstrap(address(0x0C4DeC4c53a9c6EbF7877EE0fFEc663645566345));
         // ERC721
         _name = _NAME;
         _symbol = _SYMBOL;
