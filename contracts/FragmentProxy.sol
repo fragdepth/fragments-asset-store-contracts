@@ -13,7 +13,7 @@ contract FragmentProxy is TransparentUpgradeableProxy {
             // update this to the actual one
             address(0xe14B5aE0D1E8A4e9039D40e5BF203fD21E2f6241),
             // admin contract
-            address(0x0CAebfa938D5a8967ed66607C134e21f9E361052),
+            address(0x236fCf82A170a4AdCD23D9B11362D550bBd36Ab6),
             new bytes(0)
         )
     {}
