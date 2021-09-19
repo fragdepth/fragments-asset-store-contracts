@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: BUSL-1.1 */
-/* Copyright © 2021 Fragcolor Pte. Ltd. */
+/* Copyright (c) 2021 Fragdepth Inc. */
+/* Based on code licensed by Fragcolor Pte. Ltd. */
 
 pragma solidity ^0.8.7;
 
