@@ -103,7 +103,7 @@
 (schedule main (deploy fragment-bytecode "fragment" (-> salt-string (Hash.Keccak-256))))
 (schedule main (deploy admin-bytecode "admin" (-> salt-string (Hash.Keccak-256))))
 ; this will need further editing with fragment logic and admin address!
-(schedule main (deploy fragment-proxy-bytecode "fragment-proxy" (-> salt-string (Hash.Keccak-256))))
+(schedule main (deploy fragment-proxy-bytecode "fragment-proxy" (-> "0x8dc3d46fc375118c5173dd78ffb0918bb0ba5516118bfcfdcfe5041cd4dc5d63" (HexToBytes))))
 (schedule main (Chain "bootstrap"
                       [] (Eth.EncodeCall fragment-abi "bootstrap")
                       (ToHex) >= .call
