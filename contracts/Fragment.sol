@@ -68,24 +68,22 @@ contract Fragment is
     );
 
     // Unstructured storage slots
-    bytes32 private constant SLOT_byteCost =
-        bytes32(uint256(keccak256("fragcolor.fragment.byteCost")) - 1);
     bytes32 private constant SLOT_stakeLock =
-        bytes32(uint256(keccak256("fragcolor.fragment.stakeLock")) - 1);
+        keccak256("fragcolor.fragment.stakeLock");
     bytes32 private constant SLOT_entityLogic =
-        bytes32(uint256(keccak256("fragcolor.fragment.entityLogic")) - 1);
+        keccak256("fragcolor.fragment.entityLogic");
     bytes32 private constant SLOT_vaultLogic =
-        bytes32(uint256(keccak256("fragcolor.fragment.vaultLogic")) - 1);
+        keccak256("fragcolor.fragment.vaultLogic");
     bytes32 private constant SLOT_utilityToken =
-        bytes32(uint256(keccak256("fragcolor.fragment.utilityToken")) - 1);
+        keccak256("fragcolor.fragment.utilityToken");
     bytes32 private constant SLOT_utilityLibrary =
-        bytes32(uint256(keccak256("fragcolor.fragment.utilityLibrary")) - 1);
+        keccak256("fragcolor.fragment.utilityLibrary");
     bytes32 private constant SLOT_controller =
-        bytes32(uint256(keccak256("fragcolor.fragment.controller")) - 1);
-    bytes32 private constant SLOT_ipfsRuntime =
-        bytes32(uint256(keccak256("fragcolor.fragment.ipfsRuntime")) - 1);
+        keccak256("fragcolor.fragment.controller");
+    bytes32 private constant SLOT_runtimeCid =
+        keccak256("fragcolor.fragment.runtimeCid");
 
-    // just prefixes as we need to map
+    // list of referencing fragments to resolve dependency trees
     bytes32 private constant FRAGMENT_REFS =
         keccak256("fragcolor.fragment.referencing");
     // layering whitelisting
@@ -94,6 +92,7 @@ contract Fragment is
     // keep track of rezzed entitites
     bytes32 private constant FRAGMENT_ENTITIES =
         keccak256("fragcolor.fragment.entities");
+    // fragments data storage
     bytes32 private constant FRAGMENT_DATA_V0 =
         keccak256("fragcolor.fragment.v0");
     // address to token to data map(map)
@@ -102,13 +101,16 @@ contract Fragment is
     // map token -> stakers set
     bytes32 private constant FRAGMENT_STAKE_T2A_V0 =
         keccak256("fragcolor.fragment.t2a.v0");
+    // map referenced + referencer bond
+    bytes32 private constant FRAGMENT_INCLUDE_SNAPSHOT =
+        keccak256("fragcolor.fragment.include-snapshot.v0");
 
     constructor()
         ERC721(_NAME, _SYMBOL)
         Ownable(address(0x0C4DeC4c53a9c6EbF7877EE0fFEc663645566345))
     {
         // NOT INVOKED IF PROXIED
-        _setStakeLock(23500);
+        _setUint(SLOT_stakeLock, 23500);
         setupRoyalties(payable(0), FRAGMENT_ROYALTIES_BPS);
     }
 
@@ -127,98 +129,53 @@ contract Fragment is
         _name = _NAME;
         _symbol = _SYMBOL;
         // Others
-        _setStakeLock(23500);
-        _setController(owner());
-        _setUtilityLibrary(address(0x87A26d575DA6d8e2993EAD77f8f6CD12CAd361bC));
-        _setEntityLogic(address(0x13cdfE384D63D4D4634250dF643629E01D3E6540));
-        _setVaultLogic(address(0xA439872b04aD580d9D573E41fD28a693B4B97515));
+        _setUint(SLOT_stakeLock, 23500);
+        _setAddress(SLOT_controller, owner());
+        _setAddress(
+            SLOT_utilityLibrary,
+            address(0x87A26d575DA6d8e2993EAD77f8f6CD12CAd361bC)
+        );
+        _setAddress(
+            SLOT_entityLogic,
+            address(0x13cdfE384D63D4D4634250dF643629E01D3E6540)
+        );
+        _setAddress(
+            SLOT_vaultLogic,
+            address(0xA439872b04aD580d9D573E41fD28a693B4B97515)
+        );
         setupRoyalties(payable(owner()), FRAGMENT_ROYALTIES_BPS);
     }
 
-    /*
-        GET Storage costs in $FRAG
-    */
-    function getByteCost() public view returns (uint256 cost) {
-        bytes32 slot = SLOT_byteCost;
+    function getUint(bytes32 slot) public view returns (uint256 value) {
         assembly {
-            cost := sload(slot)
+            value := sload(slot)
         }
     }
 
-    /*
-        SET Storage costs in $FRAG
-    */
-    function setByteCost(uint256 cost) public onlyOwner {
-        bytes32 slot = SLOT_byteCost;
+    function _setUint(bytes32 slot, uint256 value) private {
         assembly {
-            sstore(slot, cost)
+            sstore(slot, value)
         }
     }
 
-    /*
-        GET time in blocks of stake lock
-    */
-    function getStakeLock() public view returns (uint256 time) {
-        bytes32 slot = SLOT_stakeLock;
+    function setUint(bytes32 slot, uint256 value) external onlyOwner {
+        _setUint(slot, value);
+    }
+
+    function getAddress(bytes32 slot) public view returns (address value) {
         assembly {
-            time := sload(slot)
+            value := sload(slot)
         }
     }
 
-    function _setStakeLock(uint256 time) private {
-        bytes32 slot = SLOT_stakeLock;
+    function _setAddress(bytes32 slot, address value) private {
         assembly {
-            sstore(slot, time)
+            sstore(slot, value)
         }
     }
 
-    /*
-        SET time in blocks of stake lock
-    */
-    function setStakeLock(uint256 time) public onlyOwner {
-        _setStakeLock(time);
-    }
-
-    /*
-        GET Entity logic contract
-    */
-    function getEntityLogic() public view returns (address addr) {
-        bytes32 slot = SLOT_entityLogic;
-        assembly {
-            addr := sload(slot)
-        }
-    }
-
-    function _setEntityLogic(address addr) private {
-        bytes32 slot = SLOT_entityLogic;
-        assembly {
-            sstore(slot, addr)
-        }
-    }
-
-    /*
-        SET Entity logic contract
-    */
-    function setEntityLogic(address addr) public onlyOwner {
-        _setEntityLogic(addr);
-    }
-
-    function getUtilityToken() public view returns (address addr) {
-        bytes32 slot = SLOT_utilityToken;
-        assembly {
-            addr := sload(slot)
-        }
-    }
-
-    function _setUtilityToken(address addr) private {
-        bytes32 slot = SLOT_utilityToken;
-        assembly {
-            sstore(slot, addr)
-        }
-    }
-
-    function setUtilityToken(address addr) public onlyOwner {
-        _setUtilityToken(addr);
+    function setAddress(bytes32 slot, address value) external onlyOwner {
+        _setAddress(slot, value);
     }
 
     function getUtilityLibrary() public view returns (address addr) {
@@ -228,35 +185,6 @@ contract Fragment is
         }
     }
 
-    function _setUtilityLibrary(address addr) private {
-        bytes32 slot = SLOT_utilityLibrary;
-        assembly {
-            sstore(slot, addr)
-        }
-    }
-
-    function setUtilityLibrary(address addr) public onlyOwner {
-        _setUtilityLibrary(addr);
-    }
-
-    function getVaultLogic() public view returns (address addr) {
-        bytes32 slot = SLOT_vaultLogic;
-        assembly {
-            addr := sload(slot)
-        }
-    }
-
-    function _setVaultLogic(address addr) private {
-        bytes32 slot = SLOT_vaultLogic;
-        assembly {
-            sstore(slot, addr)
-        }
-    }
-
-    function setVaultLogic(address addr) public onlyOwner {
-        _setVaultLogic(addr);
-    }
-
     function getController() public view returns (address addr) {
         bytes32 slot = SLOT_controller;
         assembly {
@@ -264,30 +192,11 @@ contract Fragment is
         }
     }
 
-    function _setController(address addr) private {
-        bytes32 slot = SLOT_controller;
-        assembly {
-            sstore(slot, addr)
-        }
-    }
-
-    function setController(address addr) public onlyOwner {
-        _setController(addr);
-    }
-
     /* runtime CID/Hash on chain is important to ensure it's genuine */
-
-    function getIpfsRuntime() public view returns (bytes32 cid) {
-        bytes32 slot = SLOT_ipfsRuntime;
+    function getRuntimeCid() public view returns (bytes32 cid) {
+        bytes32 slot = SLOT_runtimeCid;
         assembly {
             cid := sload(slot)
-        }
-    }
-
-    function setIpfsRuntime(bytes32 cid) public onlyOwner {
-        bytes32 slot = SLOT_ipfsRuntime;
-        assembly {
-            sstore(slot, cid)
         }
     }
 
@@ -303,12 +212,12 @@ contract Fragment is
         IUtility ut = IUtility(getUtilityLibrary());
 
         uint160 fragmentHash = uint160(tokenId);
-        (uint64 ib, uint64 mb) = dataOf(fragmentHash);
+        (uint64 ib, uint64 mb, bytes32 mhash) = dataOf(fragmentHash);
 
         return
             ut.buildFragmentMetadata(
                 fragmentHash,
-                mutableDataHashOf(fragmentHash),
+                mhash,
                 includeCostOf(fragmentHash),
                 uint256(ib),
                 uint256(mb)
@@ -320,11 +229,44 @@ contract Fragment is
         return ut.buildFragmentRootMetadata(owner(), FRAGMENT_ROYALTIES_BPS);
     }
 
-    function isReferencedBy(uint160 referenced, uint160 referencer)
-        public
+    // Get stake to include snapshot and as well as indirectly if the fragment includes the other fragment
+    function getSnapshot(uint160 referenced, uint160 referencer)
+        external
         view
-        returns (bool)
+        returns (bytes memory)
     {
+        // grab the snapshot
+        FragmentDataV0[1] storage rdata;
+        bytes32 slot = bytes32(
+            uint256(
+                keccak256(
+                    abi.encodePacked(
+                        FRAGMENT_INCLUDE_SNAPSHOT,
+                        uint160(referencer),
+                        uint160(referenced)
+                    )
+                )
+            )
+        );
+        assembly {
+            rdata.slot := slot
+        }
+
+        return
+            abi.encodePacked(
+                rdata[0].includeCost,
+                rdata[0].mutableDataHash,
+                rdata[0].iDataBlockNumber,
+                rdata[0].mDataBlockNumber
+            );
+    }
+
+    function descendants(uint160 referenced)
+        external
+        view
+        returns (uint256[] memory)
+    {
+        // also add this newly minted fragment to the referencing list
         EnumerableSet.UintSet[1] storage referencing;
         bytes32 slot = bytes32(
             uint256(keccak256(abi.encodePacked(FRAGMENT_REFS, referenced)))
@@ -333,15 +275,22 @@ contract Fragment is
             referencing.slot := slot
         }
 
-        return referencing[0].contains(referencer);
+        uint256 len = referencing[0].length();
+        uint256[] memory result = new uint256[](len);
+        for (uint256 i = 0; i < len; i++) {
+            result[i] = referencing[0].at(i);
+        }
+
+        return result;
     }
 
-    // this can effectively be used to prevent a creator from referecing the fragment
-    // keep in mind that an empty whitelist means anyone can reference though!
-    function whitelistRemove(uint160 fragmentHash, address referencer)
-        public
-        fragmentOwnerOnly(fragmentHash)
-    {
+    // keep in mind that an empty whitelist means anyone can reference!
+    // also this can effectively be used to whitelist a creator from referecing the fragment (Add)
+    function whitelist(
+        uint160 fragmentHash,
+        address referencer,
+        bool remove
+    ) external fragmentOwnerOnly(fragmentHash) {
         EnumerableSet.AddressSet[1] storage referencing;
         bytes32 slot = bytes32(
             uint256(
@@ -352,25 +301,11 @@ contract Fragment is
             referencing.slot := slot
         }
 
-        referencing[0].remove(referencer);
-    }
-
-    // this can effectively be used to whitelist a creator from referecing the fragment
-    function whitelistAdd(uint160 fragmentHash, address referencer)
-        public
-        fragmentOwnerOnly(fragmentHash)
-    {
-        EnumerableSet.AddressSet[1] storage referencing;
-        bytes32 slot = bytes32(
-            uint256(
-                keccak256(abi.encodePacked(FRAGMENT_WHITELIST, fragmentHash))
-            )
-        );
-        assembly {
-            referencing.slot := slot
+        if (remove) {
+            referencing[0].remove(referencer);
+        } else {
+            referencing[0].add(referencer);
         }
-
-        referencing[0].add(referencer);
     }
 
     function includeCostOf(uint160 fragmentHash)
@@ -389,26 +324,14 @@ contract Fragment is
         return data[0].includeCost;
     }
 
-    function mutableDataHashOf(uint160 fragmentHash)
-        public
-        view
-        returns (bytes32)
-    {
-        FragmentDataV0[1] storage data;
-        bytes32 dslot = bytes32(
-            uint256(keccak256(abi.encodePacked(FRAGMENT_DATA_V0, fragmentHash)))
-        );
-        assembly {
-            data.slot := dslot
-        }
-
-        return data[0].mutableDataHash;
-    }
-
     function dataOf(uint160 fragmentHash)
         public
         view
-        returns (uint64 immutableData, uint64 mutableData)
+        returns (
+            uint64 immutableData,
+            uint64 mutableData,
+            bytes32 mutableDataHash
+        )
     {
         FragmentDataV0[1] storage data;
         bytes32 dslot = bytes32(
@@ -418,11 +341,15 @@ contract Fragment is
             data.slot := dslot
         }
 
-        return (data[0].iDataBlockNumber, data[0].mDataBlockNumber);
+        return (
+            data[0].iDataBlockNumber,
+            data[0].mDataBlockNumber,
+            data[0].mutableDataHash
+        );
     }
 
     function stakeOf(uint160 fragmentHash, address staker)
-        public
+        external
         view
         returns (uint256 amount, uint256 blockStart)
     {
@@ -446,7 +373,7 @@ contract Fragment is
     }
 
     function getStakeAt(uint160 fragmentHash, uint256 index)
-        public
+        external
         view
         returns (address staker, uint256 amount)
     {
@@ -479,7 +406,11 @@ contract Fragment is
         amount = data[0].amount;
     }
 
-    function getStakeCount(uint160 fragmentHash) public view returns (uint256) {
+    function getStakeCount(uint160 fragmentHash)
+        external
+        view
+        returns (uint256)
+    {
         EnumerableSet.AddressSet[1] storage s;
         bytes32 sslot = bytes32(
             uint256(
@@ -493,8 +424,8 @@ contract Fragment is
         return s[0].length();
     }
 
-    function stake(uint160 fragmentHash, uint256 amount) public {
-        IERC20 ut = IERC20(getUtilityToken());
+    function stake(uint160 fragmentHash, uint256 amount) external {
+        IERC20 ut = IERC20(getAddress(SLOT_utilityToken));
         assert(address(ut) != address(0));
 
         uint256 balance = ut.balanceOf(msg.sender);
@@ -519,7 +450,7 @@ contract Fragment is
         // sum it as users might add more tokens to the stake
         data[0].amount += amount;
         data[0].blockStart = block.number;
-        data[0].blockUnlock = block.number + getStakeLock();
+        data[0].blockUnlock = block.number + getUint(SLOT_stakeLock);
 
         EnumerableSet.AddressSet[1] storage adata;
         bytes32 aslot = bytes32(
@@ -538,8 +469,8 @@ contract Fragment is
         ut.safeTransferFrom(msg.sender, address(this), amount);
     }
 
-    function unstake(uint160 fragmentHash) public {
-        IERC20 ut = IERC20(getUtilityToken());
+    function unstake(uint160 fragmentHash) external {
+        IERC20 ut = IERC20(getAddress(SLOT_utilityToken));
         assert(address(ut) != address(0));
 
         StakeDataV0[1] storage data;
@@ -589,7 +520,7 @@ contract Fragment is
     }
 
     function getEntities(uint160 fragmentHash)
-        public
+        external
         view
         returns (address[] memory entities)
     {
@@ -611,7 +542,7 @@ contract Fragment is
     }
 
     function isEntityOf(address addr, uint160 fragmentHash)
-        public
+        external
         view
         returns (bool)
     {
@@ -633,13 +564,14 @@ contract Fragment is
         bytes calldata mutableData, // mutable
         uint160[] calldata references, // immutable
         uint256 includeCost // mutable
-    ) public {
+    ) external {
         // mint a new token and upload it
         // but make fragments unique by hashing them
         // THIS IS THE BIG DEAL
         // Apps just by knowing the hash can verify
         // That references are collected and were verified on upload
-        // storageCids loaded are also paid
+        // We store data in transaction inputs and so in eth blocks
+        // It can be easily retreived by any full node! No need archive nodes!
         uint160 hash = uint160(
             uint256(keccak256(abi.encodePacked(immutableData, references)))
         );
@@ -651,7 +583,7 @@ contract Fragment is
         bytes32 slot = 0;
 
         if (references.length > 0) {
-            uint256 stakeLock = getStakeLock();
+            uint256 stakeLock = getUint(SLOT_stakeLock);
             for (uint256 i = 0; i < references.length; i++) {
                 // We always can include our own creations
                 uint160 referenced = references[i];
@@ -672,6 +604,7 @@ contract Fragment is
                     fdata.slot := slot
                 }
 
+                // require stake
                 {
                     StakeDataV0[1] storage sdata;
                     slot = bytes32(
@@ -696,25 +629,50 @@ contract Fragment is
 
                     // lock the stake for a new period
                     sdata[0].blockUnlock = block.number + stakeLock;
+                    includeCost = fdata[0].includeCost;
                 }
 
-                EnumerableSet.AddressSet[1] storage whitelist;
+                // check whitelist
+                {
+                    EnumerableSet.AddressSet[1] storage rwhitelist;
+                    slot = bytes32(
+                        uint256(
+                            keccak256(
+                                abi.encodePacked(FRAGMENT_WHITELIST, referenced)
+                            )
+                        )
+                    );
+                    assembly {
+                        rwhitelist.slot := slot
+                    }
+                    require(
+                        rwhitelist[0].length() == 0 ||
+                            rwhitelist[0].contains(msg.sender),
+                        "Fragment: creator not whitelisted"
+                    );
+                }
+
+                // and snapshot the state of the referenced fragment
+                // to be able to restore it later and flag this reference on as well
+                FragmentDataV0[1] storage rdata;
                 slot = bytes32(
                     uint256(
                         keccak256(
-                            abi.encodePacked(FRAGMENT_WHITELIST, referenced)
+                            abi.encodePacked(
+                                FRAGMENT_INCLUDE_SNAPSHOT,
+                                uint160(hash), // now minting fragment
+                                uint160(referenced) // + referenced
+                            )
                         )
                     )
                 );
                 assembly {
-                    whitelist.slot := slot
+                    rdata.slot := slot
                 }
-                require(
-                    whitelist[0].length() == 0 ||
-                        whitelist[0].contains(msg.sender),
-                    "Fragment: creator not whitelisted"
-                );
 
+                rdata[0] = fdata[0];
+
+                // also add this newly minted fragment to the referencing list
                 EnumerableSet.UintSet[1] storage referencing;
                 slot = bytes32(
                     uint256(
@@ -725,7 +683,6 @@ contract Fragment is
                     referencing.slot := slot
                 }
 
-                // also add this newly minted fragment to the referencing list
                 referencing[0].add(hash);
             }
         }
@@ -750,8 +707,8 @@ contract Fragment is
         uint160 fragmentHash,
         bytes calldata mutableData,
         uint256 includeCost
-    ) public fragmentOwnerOnly(fragmentHash) {
-        (uint64 blockNumber, ) = dataOf(fragmentHash);
+    ) external fragmentOwnerOnly(fragmentHash) {
+        (uint64 blockNumber, , ) = dataOf(fragmentHash);
 
         FragmentDataV0[1] storage data;
         bytes32 dslot = bytes32(
@@ -779,7 +736,7 @@ contract Fragment is
         bool updateable,
         uint96 maxSupply
     )
-        public
+        external
         fragmentOwnerOnly(fragmentHash)
         returns (address entity, address vault)
     {
@@ -818,7 +775,9 @@ contract Fragment is
         // entity
         {
             // immediately initialize
-            IRezProxy(payable(entity)).bootstrapProxy(getEntityLogic());
+            IRezProxy(payable(entity)).bootstrapProxy(
+                getAddress(SLOT_entityLogic)
+            );
 
             FragmentInitData memory params = FragmentInitData(
                 fragmentHash,
@@ -847,7 +806,9 @@ contract Fragment is
         // vault
         {
             // immediately initialize
-            IRezProxy(payable(vault)).bootstrapProxy(getVaultLogic());
+            IRezProxy(payable(vault)).bootstrapProxy(
+                getAddress(SLOT_vaultLogic)
+            );
             IVault(payable(vault)).bootstrap(entity, address(this));
         }
 
@@ -868,9 +829,34 @@ contract Fragment is
         Even staking and all still works.
         This literally just removes the ability to trade it and removes it from showing on portals like OpenSea.
     */
-    function banish(uint160[] memory fragmentHash) public onlyOwner {
+    function banish(uint160[] memory fragmentHash) external onlyOwner {
         for (uint256 i = 0; i < fragmentHash.length; i++) {
             _burn(fragmentHash[i]);
         }
+    }
+
+    /*
+        Useful to remove spam and abuse of the system.
+        Notice that referencing works will still work! We on purpose don't clean up data for now.
+        Even staking and all still works.
+        This literally just removes the ability to trade it and removes it from showing on portals like OpenSea.
+    */
+    function burn(uint160 fragmentHash)
+        external
+        fragmentOwnerOnly(fragmentHash)
+    {
+        _burn(fragmentHash);
+    }
+
+    function recoverERC20(address tokenAddress, uint256 tokenAmount)
+        external
+        onlyOwner
+    {
+        assert(tokenAddress != getAddress(SLOT_utilityToken)); // prevent removal of our utility token!
+        IERC20(tokenAddress).safeTransfer(owner(), tokenAmount);
+    }
+
+    function recoverETH(uint256 amount) external onlyOwner {
+        payable(owner()).transfer(amount);
     }
 }

@@ -122,11 +122,11 @@ contract("Fragment", accounts => {
     const entityContract = await entityNft.deployed();
     const vaultContract = await vault.deployed();
 
-    await contract.setUtilityToken(dao20.address, { from: "0x0C4DeC4c53a9c6EbF7877EE0fFEc663645566345" });
-    await contract.setEntityLogic(entityContract.address, { from: "0x0C4DeC4c53a9c6EbF7877EE0fFEc663645566345" });
-    await contract.setVaultLogic(vaultContract.address, { from: "0x0C4DeC4c53a9c6EbF7877EE0fFEc663645566345" });
-    await contract.setUtilityLibrary(utility.address, { from: "0x0C4DeC4c53a9c6EbF7877EE0fFEc663645566345" });
-    await contract.setIpfsRuntime("0x9f668b20cfd24cdbf9e1980fa4867d08c67d2caf8499e6df81b9bf0b1c97287d", { from: "0x0C4DeC4c53a9c6EbF7877EE0fFEc663645566345" });
+    await contract.setAddress(web3.utils.sha3("fragcolor.fragment.utilityToken"), dao20.address, { from: "0x0C4DeC4c53a9c6EbF7877EE0fFEc663645566345" });
+    await contract.setAddress(web3.utils.sha3("fragcolor.fragment.entityLogic"), entityContract.address, { from: "0x0C4DeC4c53a9c6EbF7877EE0fFEc663645566345" });
+    await contract.setAddress(web3.utils.sha3("fragcolor.fragment.vaultLogic"), vaultContract.address, { from: "0x0C4DeC4c53a9c6EbF7877EE0fFEc663645566345" });
+    await contract.setAddress(web3.utils.sha3("fragcolor.fragment.utilityLibrary"), utility.address, { from: "0x0C4DeC4c53a9c6EbF7877EE0fFEc663645566345" });
+    await contract.setUint(web3.utils.sha3("fragcolor.fragment.runtimeCid"), "0x9f668b20cfd24cdbf9e1980fa4867d08c67d2caf8499e6df81b9bf0b1c97287d", { from: "0x0C4DeC4c53a9c6EbF7877EE0fFEc663645566345" });
 
     const deployTx = deterministicDeployment(nft.bytecode, receipt.gasUsed);
     const sender = Address.fromPublicKey(deployTx.getSenderPublicKey());
@@ -270,10 +270,12 @@ contract("Fragment", accounts => {
     const finalBalance = await dao20.balanceOf.call(accounts[1]);
     assert(initialBalance.sub(new BN(10, 10)).eq(finalBalance));
     tokenTwo = tx.logs[0].args.tokenId.toString();
-    const isReferencedBy = await contract.isReferencedBy(tokenOne, tokenTwo);
-    assert(isReferencedBy);
-    const isNotReferencedBy = await contract.isReferencedBy(tokenTwo, tokenOne);
-    assert(!isNotReferencedBy);
+    var snapshot = await contract.getSnapshot(tokenOne, tokenTwo);
+    assert.equal(snapshot, "0x000000000000000000000000000000000000000000000000000000000000000af548e71c32522ed78c2588df2cfdc3acd5c04cf930953ecabcc86ee3532f317c00000000000000120000000000000018");
+    snapshot = await contract.getSnapshot(tokenTwo, tokenOne);
+    assert.equal(snapshot, "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000");
+    const descendants = await contract.descendants(tokenOne);
+    assert.equal(descendants.length, 1);
   });
 
   it("should not upload a fragment with reference, paying referenced", async () => {
