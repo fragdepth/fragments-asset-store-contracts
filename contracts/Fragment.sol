@@ -80,40 +80,40 @@ contract Fragment is
 
     // Unstructured storage slots
     bytes32 private constant SLOT_stakeLock =
-        keccak256("fragcolor.fragment.stakeLock");
+        keccak256("fragdepth.fragment.stakeLock");
     bytes32 private constant SLOT_entityLogic =
-        keccak256("fragcolor.fragment.entityLogic");
+        keccak256("fragdepth.fragment.entityLogic");
     bytes32 private constant SLOT_vaultLogic =
-        keccak256("fragcolor.fragment.vaultLogic");
+        keccak256("fragdepth.fragment.vaultLogic");
     bytes32 private constant SLOT_utilityToken =
-        keccak256("fragcolor.fragment.utilityToken");
+        keccak256("fragdepth.fragment.utilityToken");
     bytes32 private constant SLOT_utilityLibrary =
-        keccak256("fragcolor.fragment.utilityLibrary");
+        keccak256("fragdepth.fragment.utilityLibrary");
     bytes32 private constant SLOT_controller =
-        keccak256("fragcolor.fragment.controller");
+        keccak256("fragdepth.fragment.controller");
     bytes32 private constant SLOT_runtimeCid =
-        keccak256("fragcolor.fragment.runtimeCid");
+        keccak256("fragdepth.fragment.runtimeCid");
 
     // list of referencing fragments to resolve dependency trees
     bytes32 private constant FRAGMENT_REFS =
-        keccak256("fragcolor.fragment.referencing");
+        keccak256("fragdepth.fragment.referencing");
     // layering whitelisting
     bytes32 private constant FRAGMENT_WHITELIST =
-        keccak256("fragcolor.fragment.referencing");
+        keccak256("fragdepth.fragment.referencing");
     // keep track of rezzed entitites
     bytes32 private constant FRAGMENT_ENTITIES =
-        keccak256("fragcolor.fragment.entities");
+        keccak256("fragdepth.fragment.entities");
     // fragments data storage
-    bytes32 private constant FRAGMENT_DATA = keccak256("fragcolor.fragment.v0");
+    bytes32 private constant FRAGMENT_DATA = keccak256("fragdepth.fragment.v0");
     // address to token to data map(map)
     bytes32 private constant FRAGMENT_STAKE_A2T2D =
-        keccak256("fragcolor.fragment.a2t2d.v0");
+        keccak256("fragdepth.fragment.a2t2d.v0");
     // map token -> stakers set
     bytes32 private constant FRAGMENT_STAKE_T2A =
-        keccak256("fragcolor.fragment.t2a.v0");
+        keccak256("fragdepth.fragment.t2a.v0");
     // map referenced + referencer bond
     bytes32 private constant FRAGMENT_INCLUDE_SNAPSHOT =
-        keccak256("fragcolor.fragment.include-snapshot.v0");
+        keccak256("fragdepth.fragment.include-snapshot.v0");
 
     constructor()
         ERC721("", "")
