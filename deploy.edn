@@ -102,12 +102,13 @@
 ; fragment will need editing to set correct above final deploy addresses!
 (schedule main (deploy fragment-bytecode "fragment" (-> salt-string (Hash.Keccak-256))))
 (schedule main (deploy admin-bytecode "admin" (-> salt-string (Hash.Keccak-256))))
-; this will need further editing with fragment logic and admin address!
-(schedule main (deploy fragment-proxy-bytecode "fragment-proxy" (-> "0x8dc3d46fc375118c5173dd78ffb0918bb0ba5516118bfcfdcfe5041cd4dc5d63" (HexToBytes))))
+; this will need upgrade and call to fix the implementation of the fragment proxy
+; 0xA55E75cae979F8F2f88AFBE649dCFe5a1D525711
+(schedule main (deploy fragment-proxy-bytecode "fragment-proxy" (-> "0x42e6828ed92d218b95880baf71da26d51bedeba009d8ce38b764111e62831f9d" (HexToBytes))))
 (schedule main (Chain "bootstrap"
                       [] (Eth.EncodeCall fragment-abi "bootstrap")
                       (ToHex) >= .call
-                      (metamask-call "0x878576534EA9C7ec24FcBf512C6f56d4ED1B9a56" .call)
+                      (metamask-call "0xA55E75cae979F8F2f88AFBE649dCFe5a1D525711" .call)
                       (Log "bootstrap")))
 (defchain slots
   "fragdepth.fragment.utilityLibrary" (Hash.Keccak-256) (ToHex) (Log "utilityLibrary")
