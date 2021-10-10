@@ -353,11 +353,15 @@ contract("Fragment", accounts => {
     const contract = await nft.deployed();
     const entity = new web3.eth.Contract(entityNft.abi, fragmentOneEntity);
     const empty = new Uint8Array(1024);
+    const partsDataHash = [
+      { t: "uint160", v: tokenTwo },
+      { t: "bytes", v: web3.utils.bytesToHex(empty) }
+    ];
+    const dataHash = web3.utils.soliditySha3(...partsDataHash);
     const parts = [
       { t: "address", v: accounts[4] },
       { t: "uint256", v: "0x1" },
-      { t: "uint160", v: tokenTwo },
-      { t: "bytes", v: web3.utils.bytesToHex(empty) },
+      { t: "bytes32", v: dataHash },
       { t: "uint96", v: "1" },
     ];
     const messageHex = web3.utils.soliditySha3(...parts);
@@ -365,6 +369,7 @@ contract("Fragment", accounts => {
     const tx = await entity.methods
       .mint(signature, empty, 1)
       .send({ from: accounts[4], gas: 800000, value: web3.utils.toWei("0.1", "ether") });
+    console.log(tx);
     const res = await entity.methods.tokenURI(2).call();
     console.log(res);
     assert.equal(res, 'https://metadata.fragments.foundation/?ch=0x01&id=0x02&e=' + fragmentOneEntity.toLowerCase() + '&m=0xfa321bd82f92ef059c267763b69b7c27d6c70bd1ea86b94194ff74884fdd1ae0&d=0x23');
